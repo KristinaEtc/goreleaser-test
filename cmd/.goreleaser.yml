@@ -1,7 +1,6 @@
-# .goreleaser.yml
-# Build customization
 builds:
-  - binary: test-goreleaser
+  - main: main.go 
+  - binary: example/test-goreleaser
     goos:
       - windows
       - darwin
