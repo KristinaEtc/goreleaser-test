@@ -30,7 +30,6 @@ func RunBuild(conf *config.Project) error {
 		Config: *conf,
 	}
 	setDefaultValues(ctx)
-	log.Printf("config=%+v\n", ctx.Config.Builds)
 	for _, build := range ctx.Config.Builds {
 		log.Println("INFO [RunBuld] building")
 		if err := runBuild(ctx, &build); err != nil {
@@ -41,28 +40,20 @@ func RunBuild(conf *config.Project) error {
 }
 
 func setDefaultValues(ctx *Context) {
-	log.Println("[DEBUG] set default values")
+	log.Println("DEBUG set default values")
 }
 
 func runBuild(ctx *Context, build *config.Build) error {
-	log.Println("DEBUG runBuild")
-	if err := run(buildtarget.Runtime, nil, build.Env); err != nil {
-		return err
-	}
+	log.Println("[DEBUG] runBuild")
+	log.Println("len=", len(buildtarget.All(*build)))
 	for _, target := range buildtarget.All(*build) {
+		fmt.Printf("[DEBUG] target=%+v\n", target)
 		target := target
 		build := build
-		doBuild(ctx, *build, target)
 
+		doBuild(ctx, *build, target)
 	}
 	return nil
-}
-
-func extentionFor(target buildtarget.Target) (ext string) {
-	if target.OS == "windows" {
-		ext = ".exe"
-	}
-	return
 }
 
 func doBuild(ctx *Context, build config.Build, target buildtarget.Target) error {
@@ -77,9 +68,13 @@ func doBuild(ctx *Context, build config.Build, target buildtarget.Target) error 
 		if err != nil {
 			return err
 		}
-		binaryName = binaryName + extentionFor(target)
+		log.Println("binaryName=", binaryName)
+		//binaryName = binaryName + extentionFor(target)
+		//log.Println("binaryName2=", binaryName)
+
 	}
 	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
+	log.Println("binary=", binary)
 	ctx.AddBinary(target.String(), folder, prettyName, binary)
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {

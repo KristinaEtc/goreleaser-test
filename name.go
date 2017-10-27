@@ -8,7 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 )
 
-// https://github.com/goreleaser/goreleaser
+// from https://github.com/goreleaser/goreleaser
 
 type nameData struct {
 	Os          string
