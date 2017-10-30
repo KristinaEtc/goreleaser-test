@@ -2,6 +2,7 @@ package goreleaser
 
 import (
 	"bytes"
+	"log"
 	"text/template"
 
 	"github.com/KristinaEtc/goreleaser/buildtarget"
@@ -17,12 +18,15 @@ type nameData struct {
 	Version     string
 	Tag         string
 	ProjectName string
+	Binary      string
 }
 
 // ForBuild return the name for the given context, goos, goarch, goarm and
 // build, using the build.Binary property instead of project_name.
 func ForBuild(ctx *Context, build config.Build, target buildtarget.Target) (string, error) {
-	return apply(
+	//ctx.Config.Archive.NameTemplate = "tt"
+	log.Println("projectname=", ctx.Config.ProjectName)
+	a, err := apply(
 		nameData{
 			Os:          replace(ctx.Config.Archive.Replacements, target.OS),
 			Arch:        replace(ctx.Config.Archive.Replacements, target.Arch),
@@ -30,9 +34,14 @@ func ForBuild(ctx *Context, build config.Build, target buildtarget.Target) (stri
 			Version:     ctx.Version,
 			Tag:         ctx.Git.CurrentTag,
 			ProjectName: build.Binary,
+			Binary:      ctx.Config.ProjectName,
 		},
 		ctx.Config.Archive.NameTemplate,
 	)
+	if err != nil {
+		return "", err
+	}
+	return a, nil
 }
 
 // ForName returns the name for the given context, goos, goarch and goarm.

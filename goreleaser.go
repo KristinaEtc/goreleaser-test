@@ -11,15 +11,20 @@ import (
 
 const (
 	confFile              = ".goreleaser.yml"
-	dirWithGitHubReleases = ".dist"
+	dirWithGitHubReleases = ".dist/"
 	secret                = "secret"
 )
 
 func Release(conf *config.Project) error {
 	log.Printf("DEBUG conf: %+v\n", conf)
-	if err := RunBuild(conf); err != nil {
+	_, err := RunBuild(conf)
+	if err != nil {
 		log.Fatal(err.Error())
 	}
+
+	/*if err := Archive(cxt); err != nil {
+		log.Fatal(err.Error())
+	}*/
 
 	return nil
 }

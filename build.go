@@ -25,7 +25,7 @@ type ldflagsData struct {
 	Version string
 }
 
-func RunBuild(conf *config.Project) error {
+func RunBuild(conf *config.Project) (*Context, error) {
 	var ctx = &Context{
 		Config: *conf,
 	}
@@ -33,19 +33,14 @@ func RunBuild(conf *config.Project) error {
 	for _, build := range ctx.Config.Builds {
 		log.Println("INFO [RunBuld] building")
 		if err := runBuild(ctx, &build); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
-}
-
-func setDefaultValues(ctx *Context) {
-	log.Println("DEBUG set default values")
+	return ctx, nil
 }
 
 func runBuild(ctx *Context, build *config.Build) error {
 	log.Println("[DEBUG] runBuild")
-	log.Println("len=", len(buildtarget.All(*build)))
 	for _, target := range buildtarget.All(*build) {
 		fmt.Printf("[DEBUG] target=%+v\n", target)
 		target := target
@@ -64,15 +59,15 @@ func doBuild(ctx *Context, build config.Build, target buildtarget.Target) error 
 	var binaryName = build.Binary + buildtarget.For(target)
 	var prettyName = binaryName
 	if ctx.Config.Archive.Format == "binary" {
+		log.Println("target", target)
 		binaryName, err = ForBuild(ctx, build, target)
 		if err != nil {
+			log.Println("ForBuild err: ", err.Error())
 			return err
 		}
-		log.Println("binaryName=", binaryName)
-		//binaryName = binaryName + extentionFor(target)
-		//log.Println("binaryName2=", binaryName)
-
+		log.Println("\n\nbinaryName=", binaryName)
 	}
+
 	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
 	log.Println("binary=", binary)
 	ctx.AddBinary(target.String(), folder, prettyName, binary)
