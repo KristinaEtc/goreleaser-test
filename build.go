@@ -51,6 +51,7 @@ func runBuild(ctx *Context, build *config.Build) error {
 	return nil
 }
 
+/*
 func doBuild(ctx *Context, build config.Build, target buildtarget.Target) error {
 	folder, err := ForName(ctx, target)
 	if err != nil {
@@ -71,6 +72,42 @@ func doBuild(ctx *Context, build config.Build, target buildtarget.Target) error 
 	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
 	log.Println("binary=", binary)
 	ctx.AddBinary(target.String(), folder, prettyName, binary)
+	cmd := []string{"go", "build"}
+	if build.Flags != "" {
+		cmd = append(cmd, strings.Fields(build.Flags)...)
+	}
+	flags, err := ldflags(ctx, build)
+	if err != nil {
+		return err
+	}
+	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
+	return run(target, cmd, build.Env)
+}
+*/
+
+func doBuild(ctx *Context, build config.Build, target buildtarget.Target) error {
+	folder, err := ForName(ctx, target)
+	if err != nil {
+		log.Println("err=", err.Error())
+		return err
+	}
+
+	var binaryName = build.Binary + buildtarget.For(target)
+	var prettyName = binaryName
+	if ctx.Config.Archive.Format == "binary" {
+		binaryName, err = ForBuild(ctx, build, target)
+		if err != nil {
+			return err
+		}
+		//binaryName = ""
+		binaryName = binaryName + buildtarget.For(target)
+	}
+	log.Printf("dirWithGitHubReleases=%s, folder=%s, binaryName=%s", dirWithGitHubReleases, folder, binaryName)
+	//	os.Exit(1)
+	var binary = filepath.Join(dirWithGitHubReleases, folder, binaryName)
+	log.Println("binary", binary, "folder", folder)
+	ctx.AddBinary(target.String(), folder, prettyName, binary)
+	log.Println("binary", binary, " - building")
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {
 		cmd = append(cmd, strings.Fields(build.Flags)...)

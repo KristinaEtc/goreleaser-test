@@ -10,8 +10,20 @@ import (
 )
 
 const (
-	NameTemplate        = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+	//NameTemplate        = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+	//	ReleaseNameTemplate = "{{.Tag}}"
+
+	// NameTemplate default name_template for the archive.
+	NameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
+	// ReleaseNameTemplate is the default name for the release.
 	ReleaseNameTemplate = "{{.Tag}}"
+
+	// SnapshotNameTemplate represents the default format for snapshot release names.
+	SnapshotNameTemplate = "SNAPSHOT-{{ .Commit }}"
+
+	// ChecksumNameTemplate is the default name_template for the checksum file.
+	ChecksumNameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
 )
 
 func SetDefault(ctx *context.Context) error {
@@ -45,27 +57,8 @@ func SetDefault(ctx *context.Context) error {
 	}
 
 	err := setArchiveDefaults(ctx)
-	setDockerDefaults(ctx)
 	log.WithField("config", ctx.Config).Debug("defaults set")
 	return err
-}
-
-func setDockerDefaults(ctx *context.Context) {
-	if len(ctx.Config.Dockers) != 1 {
-		return
-	}
-	if ctx.Config.Dockers[0].Goos == "" {
-		ctx.Config.Dockers[0].Goos = "linux"
-	}
-	if ctx.Config.Dockers[0].Goarch == "" {
-		ctx.Config.Dockers[0].Goarch = "amd64"
-	}
-	if ctx.Config.Dockers[0].Binary == "" {
-		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
-	}
-	if ctx.Config.Dockers[0].Dockerfile == "" {
-		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
-	}
 }
 
 func isBrewBuild(build config.Build) bool {
@@ -100,6 +93,11 @@ func setBuildDefaults(ctx *context.Context) {
 func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 	if build.Binary == "" {
 		build.Binary = ctx.Config.Release.GitHub.Name
+	}
+
+	ctx.Config.Dist = "dist"
+	if ctx.Config.Release.NameTemplate == "" {
+		ctx.Config.Release.NameTemplate = ReleaseNameTemplate
 	}
 
 	if len(build.Goos) == 0 {

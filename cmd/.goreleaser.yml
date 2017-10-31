@@ -1,6 +1,6 @@
 builds:
   - main: main.go 
-  - binary: ../example/test-goreleaser
+  - binary: test-goreleaser
     goos:
       - windows
       - darwin

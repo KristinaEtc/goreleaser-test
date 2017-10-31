@@ -10,9 +10,9 @@ func For(target Target) (ext string) {
 	if target.OS == "windows" {
 		ext = ".exe"
 	}
-	if target.OS == "linux" {
+	/*if target.OS == "linux" {
 		ext = ".l"
-	}
+	}*/
 	return
 }
 

@@ -24,38 +24,38 @@ type nameData struct {
 // ForBuild return the name for the given context, goos, goarch, goarm and
 // build, using the build.Binary property instead of project_name.
 func ForBuild(ctx *Context, build config.Build, target buildtarget.Target) (string, error) {
-	//ctx.Config.Archive.NameTemplate = "tt"
-	log.Println("projectname=", ctx.Config.ProjectName)
-	a, err := apply(
+	return apply(
 		nameData{
-			Os:          replace(ctx.Config.Archive.Replacements, target.OS),
-			Arch:        replace(ctx.Config.Archive.Replacements, target.Arch),
-			Arm:         replace(ctx.Config.Archive.Replacements, target.Arm),
-			Version:     ctx.Version,
-			Tag:         ctx.Git.CurrentTag,
-			ProjectName: build.Binary,
-			Binary:      ctx.Config.ProjectName,
+			Os:      replace(ctx.Config.Archive.Replacements, target.OS),
+			Arch:    replace(ctx.Config.Archive.Replacements, target.Arch),
+			Arm:     replace(ctx.Config.Archive.Replacements, target.Arm),
+			Version: ctx.Version,
+			Tag:     ctx.Git.CurrentTag,
+			//Binary:      build.Binary,
+			ProjectName: "goreleaser",
+			Binary:      "goreleaser",
+			//	ProjectName: build.Binary,
 		},
 		ctx.Config.Archive.NameTemplate,
 	)
-	if err != nil {
-		return "", err
-	}
-	return a, nil
 }
 
 // ForName returns the name for the given context, goos, goarch and goarm.
 func ForName(ctx *Context, target buildtarget.Target) (string, error) {
 	return apply(
 		nameData{
-			Os:          replace(ctx.Config.Archive.Replacements, target.OS),
-			Arch:        replace(ctx.Config.Archive.Replacements, target.Arch),
-			Arm:         replace(ctx.Config.Archive.Replacements, target.Arm),
-			Version:     ctx.Version,
-			Tag:         ctx.Git.CurrentTag,
-			ProjectName: ctx.Config.ProjectName,
+			Os:      replace(ctx.Config.Archive.Replacements, target.OS),
+			Arch:    replace(ctx.Config.Archive.Replacements, target.Arch),
+			Arm:     replace(ctx.Config.Archive.Replacements, target.Arm),
+			Version: ctx.Version,
+			Tag:     ctx.Git.CurrentTag,
+			//Binary:      ctx.Config.ProjectName,
+			//	ProjectName: ctx.Config.ProjectName,
+			ProjectName: "goreleaser",
+			Binary:      "goreleaser",
 		},
-		ctx.Config.Archive.NameTemplate,
+		//ctx.Config.Archive.NameTemplate,
+		NameTemplate,
 	)
 }
 
@@ -64,9 +64,9 @@ func ForName(ctx *Context, target buildtarget.Target) (string, error) {
 func ForChecksums(ctx *Context) (string, error) {
 	return apply(
 		nameData{
-			ProjectName: ctx.Config.ProjectName,
-			Tag:         ctx.Git.CurrentTag,
-			Version:     ctx.Version,
+			//	ProjectName: ctx.Config.ProjectName,
+			Tag:     ctx.Git.CurrentTag,
+			Version: ctx.Version,
 		},
 		ctx.Config.Checksum.NameTemplate,
 	)
@@ -85,12 +85,21 @@ func ForTitle(ctx *Context) (string, error) {
 }
 
 func apply(data nameData, templateStr string) (string, error) {
+	//	log.Printf("data=%+v\n", data)
+	//log.Println("template.New")
+	//	log.Printf("templatestr=%s\n", templateStr)
+	//os.Exit(1)
 	var out bytes.Buffer
 	t, err := template.New(data.ProjectName).Parse(templateStr)
 	if err != nil {
+		log.Println("template.New err=", err.Error())
 		return "", err
 	}
 	err = t.Execute(&out, data)
+	if err != nil {
+		log.Println("Execute err=", err.Error())
+	}
+	//	log.Println("out.String(=", out.String())
 	return out.String(), err
 }
 
