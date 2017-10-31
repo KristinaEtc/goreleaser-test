@@ -1,6 +1,7 @@
 package goreleaser
 
 import (
+	"context"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,6 +14,7 @@ func RunRelease(ctx *Context) error {
 	if err != nil {
 		return err
 	}
+	ctx.Context = context.Background()
 	return doRun(ctx, c)
 }
 

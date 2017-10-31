@@ -112,6 +112,7 @@ func (c *githubClient) CreateFile(
 
 func (c *githubClient) CreateRelease(ctx *Context, body string) (releaseID int, err error) {
 	var release *github.RepositoryRelease
+	fmt.Printf("\n\nctx=%+v\n", ctx)
 	releaseTitle, err := ForTitle(ctx)
 	if err != nil {
 		return 0, err
@@ -124,7 +125,7 @@ func (c *githubClient) CreateRelease(ctx *Context, body string) (releaseID int, 
 		Prerelease: github.Bool(ctx.Config.Release.Prerelease),
 	}
 	release, _, err = c.client.Repositories.GetReleaseByTag(
-		ctx,
+		ctx.Context,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 		ctx.Git.CurrentTag,
@@ -132,8 +133,10 @@ func (c *githubClient) CreateRelease(ctx *Context, body string) (releaseID int, 
 	if err != nil {
 		release, _, err = c.client.Repositories.CreateRelease(
 			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
+			//ctx.Config.Release.GitHub.Owner,
+			//ctx.Config.Release.GitHub.Name,
+			"gg",
+			"wp",
 			data,
 		)
 	} else {
