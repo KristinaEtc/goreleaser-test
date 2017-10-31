@@ -18,11 +18,13 @@ var dirWithGitHubReleases = "dist/"
 
 func Release(conf *config.Project) error {
 	log.Printf("DEBUG conf: %+v\n", conf)
-	_, err := RunBuild(conf)
+	cnt, err := RunBuild(conf)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
+	if err := Archive(cnt); err != nil {
+		log.Fatalln(err.Error())
+	}
 	return nil
 }
 

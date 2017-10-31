@@ -29,11 +29,15 @@ func Archive(ctx *Context) error {
 func create(ctx *Context, platform string, groups map[string][]Binary) error {
 	fmt.Printf("debug [create] groups=%+v", groups)
 	for folder, binaries := range groups {
-		folder = dirWithGitHubReleases
+		log.Println("folder=", folder)
+		//os.Exit(1)
+		//folder = dirWithGitHubReleases
 		var format = archiveformatFor(ctx, platform)
-		archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
-		fmt.Println(folder, binaries, format, archivePath)
+
+		archivePath := filepath.Join(dirWithGitHubReleases, folder+"."+format)
 		archiveFile, err := os.Create(archivePath)
+		fmt.Println("folder=", folder, binaries, format, archivePath, archiveFile)
+		//	os.Exit(1)
 		if err != nil {
 			return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
 		}
@@ -43,6 +47,7 @@ func create(ctx *Context, platform string, groups map[string][]Binary) error {
 			}
 		}()
 		log.Println("archive", archivePath, "creating")
+		//os.Exit(1)
 		var a = archive.New(archiveFile)
 		defer func() {
 			if e := a.Close(); e != nil {
@@ -72,6 +77,7 @@ func create(ctx *Context, platform string, groups map[string][]Binary) error {
 // archiveformatFor return the archive format, considering overrides and all that
 func archiveformatFor(ctx *Context, platform string) string {
 	for _, override := range ctx.Config.Archive.FormatOverrides {
+		fmt.Println("\n\n[DEBUG] override", override, "platform=", platform)
 		if strings.HasPrefix(platform, override.Goos) {
 			return override.Format
 		}
