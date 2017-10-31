@@ -5,6 +5,8 @@ import (
 	"log"
 	"text/template"
 
+	//"github.com/KristinaEtc/goreleaser"
+	//"github.com/KristinaEtc/goreleaser"
 	"github.com/KristinaEtc/goreleaser/buildtarget"
 	"github.com/goreleaser/goreleaser/config"
 )

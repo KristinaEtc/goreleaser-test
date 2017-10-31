@@ -25,6 +25,14 @@ func Release(conf *config.Project) error {
 	if err := Archive(cnt); err != nil {
 		log.Fatalln(err.Error())
 	}
+
+	if err := Archive(cnt); err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	if err := RunRelease(cnt); err != nil {
+		log.Fatalln(err.Error())
+	}
 	return nil
 }
 
