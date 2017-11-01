@@ -26,7 +26,7 @@ func getToken() (string, error) {
 	}
 	s := string(token)
 	sz := len(string(token))
-	return s[:sz-1], nil
+	return s[:sz], nil
 }
 
 // NewGitHub returns a github client implementation
@@ -112,7 +112,6 @@ func (c *githubClient) CreateFile(
 
 func (c *githubClient) CreateRelease(ctx *Context, body string) (releaseID int, err error) {
 	var release *github.RepositoryRelease
-	fmt.Printf("\n\nctx=%+v\n", ctx)
 	releaseTitle, err := ForTitle(ctx)
 	if err != nil {
 		return 0, err
@@ -130,13 +129,12 @@ func (c *githubClient) CreateRelease(ctx *Context, body string) (releaseID int, 
 		ctx.Config.Release.GitHub.Name,
 		ctx.Git.CurrentTag,
 	)
+
 	if err != nil {
 		release, _, err = c.client.Repositories.CreateRelease(
 			ctx,
-			//ctx.Config.Release.GitHub.Owner,
-			//ctx.Config.Release.GitHub.Name,
-			"gg",
-			"wp",
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
 			data,
 		)
 	} else {

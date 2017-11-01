@@ -2,11 +2,13 @@ package goreleaser
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -58,6 +60,7 @@ func SetDefault(ctx *context.Context) error {
 
 	err := setArchiveDefaults(ctx)
 	log.WithField("config", ctx.Config).Debug("defaults set")
+	setReleaseDefaults(ctx)
 	return err
 }
 
@@ -133,4 +136,69 @@ func setArchiveDefaults(ctx *context.Context) error {
 		}
 	}
 	return nil
+}
+
+func setReleaseDefaults(ctx *context.Context) error {
+	if ctx.Config.Release.GitHub.Name != "" {
+		return nil
+	}
+	repo, err := remoteRepo()
+	if err != nil {
+		return err
+	}
+	ctx.Config.Release.GitHub = repo
+	return nil
+}
+
+// remoteRepo gets the repo name from the Git config.
+func remoteRepo() (result config.Repo, err error) {
+	if !gitIsRepo() {
+		return result, errors.New("current folder is not a git repository")
+	}
+	out, err := gitRun("config", "--get", "remote.origin.url")
+	if err != nil {
+		return result, errors.Wrap(err, "repository doesn't have an `origin` remote")
+	}
+	return extractRepoFromURL(out), nil
+}
+
+func extractRepoFromURL(s string) config.Repo {
+	for _, r := range []string{
+		"git@github.com:",
+		".git",
+		"https://github.com/",
+		"\n",
+	} {
+		s = strings.Replace(s, r, "", -1)
+	}
+	return toRepo(s)
+}
+
+func toRepo(s string) config.Repo {
+	var ss = strings.Split(s, "/")
+	return config.Repo{
+		Owner: ss[0],
+		Name:  ss[1],
+	}
+}
+
+// IsRepo returns true if current folder is a git repository
+func gitIsRepo() bool {
+	out, err := gitRun("rev-parse", "--is-inside-work-tree")
+	return err == nil && strings.TrimSpace(out) == "true"
+}
+
+// gitRun runs a git command and returns its output or errors
+func gitRun(args ...string) (output string, err error) {
+	var cmd = exec.Command("git", args...)
+	bts, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", errors.New(string(bts))
+	}
+	return string(bts), err
+}
+
+// Clean the output
+func Clean(output string, err error) (string, error) {
+	return strings.Replace(strings.Split(output, "\n")[0], "'", "", -1), err
 }
